@@ -1,9 +1,7 @@
 <#
     Robert Stepp, robert@robertstepp.ninja
     Functionality -
-        Check hashes for files against a pre-existing file
-        Can be run twice, once to build the initial file and again to compare
-            the final against initial hashes.
+
 #>
 
 <# Debug settings
