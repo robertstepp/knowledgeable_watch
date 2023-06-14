@@ -1,6 +1,33 @@
 <#
     Robert Stepp, robert@robertstepp.ninja
     Functionality -
+    This PowerShell script allows users to track time entries for various items based on a
+    configuration file. The script reads a configuration file named "config.ini" that
+    contains a list of items with their corresponding categories. It presents a graphical
+    user interface (GUI) with buttons for each item, allowing the user to select multiple
+    items.
+
+    The script calculates the total duration for the selected items and generates a
+    timesheet report. The timesheet is saved as an Excel workbook with the filename
+    "Timesheet-YYYYMMDD.xlsx", where "YYYYMMDD" represents the current date. The timesheet
+    report includes the total duration for each item, rounded to the nearest minute, and
+    expressed in tenths per hour rounded up to the first digit.
+
+    Before running the GUI, the script checks if an Excel spreadsheet for the current date
+    already exists. If it does, the user is prompted to confirm whether to overwrite it.
+
+    Additionally, the script creates a raw timesheet CSV file named "raw_timesheet.csv"
+    that stores the start and end times of each item selection. The raw timesheet data is
+    also included as a separate sheet in the generated Excel workbook.
+
+    Usage:
+    - Ensure that a configuration file named "config.ini" is present in the script's
+      directory.
+    - Run the script to launch the GUI.
+    - Select the desired items by clicking the corresponding buttons.
+    - Click the "Done" button to generate the timesheet report.
+    - Confirm overwriting an existing timesheet, if applicable.
+
 #>
 
 # Import the required .NET assemblies
