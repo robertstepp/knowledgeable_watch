@@ -4,7 +4,7 @@
 #>
 
 # Import the required .NET assemblies
-[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") 
+[void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 
 # Global variables
@@ -132,7 +132,7 @@ function Show-ItemForm {
         Export-Timesheet
         # Delete the raw_timesheet CSV file
         Remove-Item -Path "raw_timesheet.csv" -Force -ErrorAction SilentlyContinue
-    
+
     })
 
     # Add the "Done" button to the form
@@ -225,11 +225,11 @@ function Export-Timesheet {
     }
 
     # Save the workbook to an Excel file
-    $scriptDirectory = (Get-ParentScriptFolder) 
+    $scriptDirectory = (Get-ParentScriptFolder)
     $excelFile = Join-Path -Path $scriptDirectory -ChildPath "Timesheet-$date.xlsx"
     $workbook.SaveAs($excelFile)
 
-    Write-Host "Timesheet generated: $excelFile"
+    Write-Debug "Timesheet generated: $excelFile"
 
     # Remove the "Sheet1" from the workbook, if it exists
     $sheetName = "Sheet1"
@@ -279,7 +279,7 @@ function Test-ExistingTimesheet {
         # Prompt the user for confirmation to proceed
         $result = [System.Windows.Forms.MessageBox]::Show("An Excel spreadsheet for today already exists. Do you want to continue and overwrite it?", "Confirmation", [System.Windows.Forms.MessageBoxButtons]::YesNo)
         if ($result -ne [System.Windows.Forms.DialogResult]::Yes) {
-            Write-Host "Operation canceled. Script will exit."
+            Write-Debug "Operation canceled. Script will exit."
             exit
         }
     }
