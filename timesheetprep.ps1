@@ -42,11 +42,14 @@ $selectedButton = $null
     No Debug output = SilentlyContinue
     Debug output = Continue
 #>
-$DebugPreference = 'Continue'
+$DebugPreference = 'SilentlyContinue'
 
 # Start the transcript
-$transcriptPath = "DebugLogs\" + (Get-Date -Format 'yyyyMMdd_HHmm') + "_debug.log"
-Start-Transcript -Path $transcriptPath -Append
+if ($DebugPreference -eq "Continue") {
+    $logFile = Join-Path -Path (Get-ParentScriptFolder) -ChildPath "debug.log"
+    Start-Transcript -Path $logFile -Append
+}
+Write-Debug "Debug Preference: $($DebugPreference)"
 
 # Get the path to the parent folder
 function Get-ParentScriptFolder {
@@ -54,6 +57,16 @@ function Get-ParentScriptFolder {
     $myParentFolder = Split-Path -Path $thisScriptPath
     Write-Debug "Parent Folder: $($myParentFolder)"
     return $myParentFolder
+}
+
+# Main function of the script. Called at the end of the script.
+function Start-Main() {
+    $excelFile = Join-Path -Path (Get-ParentScriptFolder) -ChildPath "Timesheet-$(Get-Date -Format 'yyyyMMdd').xlsx"
+    Test-ExistingTimesheet -ExcelFile $excelFile
+
+    $configFile = "config.ini"
+    $configData = Read-ConfigFile -FilePath $configFile
+    Show-ItemForm -Items $configData
 }
 
 # Read the config file
@@ -329,13 +342,9 @@ function Test-ExistingTimesheet {
     }
 }
 
-$scriptDirectory = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
-$excelFile = Join-Path -Path $scriptDirectory -ChildPath "Timesheet-$(Get-Date -Format 'yyyyMMdd').xlsx"
-Test-ExistingTimesheet -ExcelFile $excelFile
+Start-Main
 
-$configFile = "config.ini"
-$configData = Read-ConfigFile -FilePath $configFile
-Show-ItemForm -Items $configData
-
-# Stop the transcript
-Stop-Transcript
+if ($DebugPreference -eq "Continue") {
+    # Stop the transcript
+    Stop-Transcript
+}
