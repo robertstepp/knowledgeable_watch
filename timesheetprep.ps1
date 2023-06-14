@@ -125,18 +125,18 @@ function Show-ItemForm {
 
         # Create a closure to capture the current button
         $handler = {
-            param($sender)
+            param($thisSender)
             # Update the selected item and button states
             $selectedItems.Keys | ForEach-Object {
                 $buttons[$_].BackColor = [System.Drawing.Color]::Gray
                 $buttons[$_].ForeColor = [System.Drawing.Color]::Black
             }
             $selectedItems.Clear()
-            $selectedItems[$sender.Text] = $Items[$sender.Text]
-            $sender.BackColor = [System.Drawing.Color]::White
-            $sender.ForeColor = [System.Drawing.Color]::Red
-            Write-Debug $sender
-            Save-ButtonPress -ButtonText $sender.Text
+            $selectedItems[$thisSender.Text] = $Items[$thisSender.Text]
+            $thisSender.BackColor = [System.Drawing.Color]::White
+            $thisSender.ForeColor = [System.Drawing.Color]::Red
+            Write-Debug $thisSender
+            Save-ButtonPress -ButtonText $thisSender.Text
         }
 
         # Assign the closure as the button's event handler
