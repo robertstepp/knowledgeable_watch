@@ -69,8 +69,11 @@ function Read-ConfigFile {
     # Split the content by line breaks
     $lines = $configContent -split "`r?`n"
 
-    # Initialize an empty hashtable to store the configuration data
-    $configData = @{}
+    # Initialize an empty array to store the configuration data
+    $configData = @()
+
+    # Initialize a variable to store the current category
+    $currentCategory = ""
 
     # Process each line in the config file
     foreach ($line in $lines) {
@@ -78,23 +81,36 @@ function Read-ConfigFile {
         if (-not [string]::IsNullOrWhiteSpace($line) -and -not $line.TrimStart().StartsWith(";")) {
             $trimmedLine = $line.Trim()
 
-            # Create key-value pair for the item
-            $item = $trimmedLine
-            if (-not $configData.ContainsKey($item)) {
-                $configData[$item] = 0
+            # Check if the line is a category line
+            if ($trimmedLine -match '^\[(.+)\]$') {
+                # Get the category name and store it as the current category
+                $currentCategory = $matches[1]
+            } else {
+                # Create a custom object for the item within the current category
+                $item = [PSCustomObject]@{
+                    Category = $currentCategory
+                    Name = $trimmedLine
+                }
+
+                # Add the item to the configuration data array
+                $configData += $item
             }
         }
     }
 
-    # Return the configuration data hashtable
-    return $configData
+    # Sort the configuration data array based on the original order of items in the config file
+    $sortedConfigData = $configData | Sort-Object { $_.Name }
+
+    # Return the sorted configuration data array
+    return $sortedConfigData
 }
 
+# Show the item form
 # Show the item form
 function Show-ItemForm {
     param (
         [Parameter(Mandatory = $true)]
-        [hashtable]$Items
+        [array]$Items
     )
 
     # Create a new form
@@ -108,7 +124,7 @@ function Show-ItemForm {
     $selectedItems = @{}
 
     # Calculate the maximum button width
-    $maxButtonWidth = ($Items.Keys | Measure-Object -Maximum -Property Length).Maximum * 10
+    $maxButtonWidth = ($Items.Name | Measure-Object -Maximum -Property Length).Maximum * 10
 
     # Create buttons for each item
     $paddingTop = 20
@@ -116,9 +132,9 @@ function Show-ItemForm {
     $buttonMargin = 10
     $index = 0
     $buttons = @{}
-    foreach ($item in $Items.Keys | Sort-Object) {
+    foreach ($item in $Items) {
         $button = New-Object System.Windows.Forms.Button
-        $button.Text = $item
+        $button.Text = $item.Name
         $buttonTop = $paddingTop + ($buttonHeight + $buttonMargin) * $index
         $button.Location = New-Object System.Drawing.Point(0, $buttonTop)
         $button.Size = New-Object System.Drawing.Size($maxButtonWidth, $buttonHeight)
@@ -132,7 +148,7 @@ function Show-ItemForm {
                 $buttons[$_].ForeColor = [System.Drawing.Color]::Black
             }
             $selectedItems.Clear()
-            $selectedItems[$thisSender.Text] = $Items[$thisSender.Text]
+            $selectedItems[$thisSender.Text] = $Items | Where-Object { $_.Name -eq $thisSender.Text }
             $thisSender.BackColor = [System.Drawing.Color]::White
             $thisSender.ForeColor = [System.Drawing.Color]::Red
             Write-Debug $thisSender
@@ -144,7 +160,7 @@ function Show-ItemForm {
 
         # Add the button to the form
         $form.Controls.Add($button)
-        $buttons[$item] = $button
+        $buttons[$item.Name] = $button
         $index++
     }
 
@@ -175,6 +191,7 @@ function Show-ItemForm {
     $form.TopMost = $true
     [void]$form.ShowDialog()
 }
+
 
 # Save the button press information
 function Save-ButtonPress {
@@ -244,7 +261,7 @@ function Export-Timesheet {
     $row = 2
     foreach ($item in $groupedTimesheet) {
         $durationMinutes = [Math]::Ceiling($item.TotalDuration / 60)
-        $durationTenthsPerHour = [Math]::Ceiling(($item.TotalDuration / 60) * 10)
+        $durationTenthsPerHour = [Math]::Ceiling($item.TotalDuration / (60 / 6)) / 10
         $worksheet.Cells.Item($row, 1) = $item.Button
         $worksheet.Cells.Item($row, 2) = $durationMinutes
         $worksheet.Cells.Item($row, 3) = $durationTenthsPerHour
